@@ -168,7 +168,10 @@ def login(
             "role": user.role,
             "created_at": user.created_at
         }
-    }
+
+    } 
+
+    
 
 
 # ==========================================
@@ -220,3 +223,4 @@ def logout(
     return {
         "message": "Logged out successfully"
     }
+
