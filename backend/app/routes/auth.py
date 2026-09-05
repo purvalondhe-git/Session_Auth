@@ -151,13 +151,14 @@ def login(
 
     # Store session ID in HTTP-only cookie
     response.set_cookie(
-        key="session_id",
-        value=session_id,
-        httponly=True,
-        secure=False,       # False for local HTTP testing
-        samesite="lax",
-        max_age=SESSION_DURATION_DAYS * 24 * 60 * 60
-    )
+    key="session_id",
+    value=session_id,
+    max_age=SESSION_DURATION_DAYS * 24 * 60 * 60,
+    httponly=True,
+    secure=False,
+    samesite="lax",
+    path="/"
+)
 
     return {
         "message": "Login successful",

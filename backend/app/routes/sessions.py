@@ -13,9 +13,9 @@ router = APIRouter(
 )
 
 
-# -----------------------------------
-# 1. View active sessions
-# -----------------------------------
+# =========================================================
+# 1. VIEW MY ACTIVE SESSIONS
+# =========================================================
 
 @router.get(
     "/sessions",
@@ -25,6 +25,11 @@ def get_my_sessions(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
+    """
+    Return only the sessions belonging to the currently
+    logged-in user.
+    """
+
     sessions = (
         db.query(SessionModel)
         .filter(
@@ -36,21 +41,29 @@ def get_my_sessions(
     return sessions
 
 
-# -----------------------------------
-# 2. Logout one specific session
-# -----------------------------------
+# =========================================================
+# 2. LOGOUT / TERMINATE ONE OF MY SESSIONS
+# =========================================================
 
 @router.delete("/sessions/{session_id}")
 def logout_session(
     session_id: str,
+
     response: Response,
+
     current_session_id: str | None = Cookie(
         default=None,
         alias="session_id"
     ),
+
     current_user=Depends(get_current_user),
+
     db: Session = Depends(get_db)
 ):
+    """
+    A normal user can terminate only their own session.
+    """
+
     session = (
         db.query(SessionModel)
         .filter(
@@ -66,30 +79,39 @@ def logout_session(
             detail="Session not found"
         )
 
+    # Delete the session from database
     db.delete(session)
     db.commit()
 
+    # If the user terminated their current browser session,
+    # remove the session cookie from that browser.
     if session_id == current_session_id:
-        response.delete_cookie("session_id")
+        response.delete_cookie(
+            key="session_id"
+        )
 
     return {
         "message": "Session logged out successfully"
     }
 
-    # -----------------------------------
-# 3. Logout all sessions
-# -----------------------------------
+
+# =========================================================
+# 3. LOGOUT ALL MY SESSIONS
+# =========================================================
 
 @router.post("/logout-all")
 def logout_all_sessions(
     response: Response,
-    current_session_id: str | None = Cookie(
-        default=None,
-        alias="session_id"
-    ),
+
     current_user=Depends(get_current_user),
+
     db: Session = Depends(get_db)
 ):
+    """
+    Delete all sessions belonging to the currently
+    logged-in user.
+    """
+
     sessions = (
         db.query(SessionModel)
         .filter(
@@ -103,7 +125,10 @@ def logout_all_sessions(
 
     db.commit()
 
-    response.delete_cookie("session_id")
+    # Remove the current browser's session cookie
+    response.delete_cookie(
+        key="session_id"
+    )
 
     return {
         "message": "All sessions logged out successfully"
