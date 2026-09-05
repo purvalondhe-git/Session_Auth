@@ -154,4 +154,4 @@ def login(
             "role": user.role,
             "created_at": user.created_at
         }
-    }
+    } 
